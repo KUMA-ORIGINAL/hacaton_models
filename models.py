@@ -21,26 +21,19 @@ class PermissionEnum(enum.Enum):
     delete = 'delete'
 
 
-users_employees = Table(
-    'users_employees',
-    Base.metadata,
-    Column('users_id', ForeignKey('users.id'), primary_key=True),
-    Column('employees_id', ForeignKey('employees.id'), primary_key=True)
-)
-
 
 class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     tg_username: Mapped[str] = mapped_column(String(200), unique=True)
+    tg_first_name: Mapped[str] = mapped_column(String(200))
+    tg_last_name: Mapped[str] = mapped_column(String(200))
     phone_number: Mapped[Optional[str]] = mapped_column(String(200), unique=True)
     email: Mapped[Optional[str]] = mapped_column(String(200), unique=True)
 
     client: Mapped['Client'] = relationship(back_populates='user')
-    employees: Mapped[List['Employee']] = relationship(
-        secondary=users_employees, back_populates='users'
-    )
+    employees: Mapped[List['Employee']] = relationship(back_populates='user')
 
 
 class Role(Base):
@@ -56,8 +49,6 @@ class Role(Base):
 class Client(User):
     __tablename__ = "clients"
 
-    tg_first_name: Mapped[str] = mapped_column(String(200))
-    tg_last_name: Mapped[str] = mapped_column(String(200))
     first_name: Mapped[str] = mapped_column(String(200))
     last_name: Mapped[str] = mapped_column(String(200))
     gender: Mapped[GenderEnum] = mapped_column(Enum(GenderEnum))
@@ -72,8 +63,6 @@ class Client(User):
 class Employee(User):
     __tablename__ = "employees"
 
-    tg_first_name: Mapped[str] = mapped_column(String(200))
-    tg_last_name: Mapped[str] = mapped_column(String(200))
     first_name: Mapped[str] = mapped_column(String(200))
     last_name: Mapped[str] = mapped_column(String(200))
     gender: Mapped[GenderEnum] = mapped_column(Enum(GenderEnum))
@@ -82,9 +71,8 @@ class Employee(User):
     id: Mapped[int] = mapped_column(primary_key=True)
     role_id: Mapped[int] = mapped_column(ForeignKey('roles.id'))
     role: Mapped[Role] = relationship(back_populates='employees')
-    users: Mapped[List['User']] = relationship(
-        secondary=users_employees, back_populates='employees'
-    )
+    user_id: Mapped[int] = mapped_column(ForeignKey('user.id'))
+    user: Mapped[List['User']] = relationship(back_populates='employees')
     organization_id: Mapped[int] = mapped_column(ForeignKey('organizations.id'))
     organization: Mapped['Organization'] = relationship(back_populates='employees')
 
@@ -149,3 +137,7 @@ class Category(Base):
     services: Mapped[List['Service']] = relationship(
         secondary=services_categories, back_populates='categories'
     )
+
+
+# Charitable Foundation "IQ Option"
+# "Python Generation": course for beginners
